@@ -42,6 +42,7 @@ from dwarf_debugger.ui.widgets.utils.selection import Selection
 # pylint: disable=C0103
 
 
+
 # pylint: disable=C0103
 
 
@@ -186,19 +187,16 @@ class HexEditor(QAbstractScrollArea):
 
         self._bytes_per_line = self._pref_bpl
 
-        self._char_width = QFontMetricsF(self.font).width('#')
+        self._char_width = QFontMetricsF(self.font).width('#')  # self.fontMetrics().width("#")
         if (self._char_width % 1) < .5:
-            self.font.setLetterSpacing(
-                QFont.AbsoluteSpacing, -(self._char_width % 1.0))
+            self.font.setLetterSpacing(QFont.AbsoluteSpacing, -(self._char_width % 1.0))
             self._char_width -= self._char_width % 1.0
         else:
-            self.font.setLetterSpacing(
-                QFont.AbsoluteSpacing, 1.0 - (self._char_width % 1.0))
+            self.font.setLetterSpacing(QFont.AbsoluteSpacing, 1.0 - (self._char_width % 1.0))
             self._char_width += 1.0 - (self._char_width % 1.0)
 
-        self._char_width = int(ceil(self._char_width))
-        self._char_height = int(self.fontMetrics().height())
-        self._base_line = int(self.fontMetrics().ascent())
+        self._char_height = self.fontMetrics().height()
+        self._base_line = self.fontMetrics().ascent()
 
         # drawing positions
         self._addr_chr = 8
@@ -217,7 +215,7 @@ class HexEditor(QAbstractScrollArea):
 
         self._hex_start = self._offset_start + self._offset_width + self._col_div
         self._hex_width = self.bytes_per_line * (
-            3 * self._char_width) - self._char_width
+                3 * self._char_width) - self._char_width
 
         self._ascii_start = self._hex_start + self._hex_width + self._col_div
         self._ascii_width = self.bytes_per_line * self._char_width
@@ -373,7 +371,7 @@ class HexEditor(QAbstractScrollArea):
         if isinstance(value, int):
             self._bytes_per_line = value
             self._hex_width = self.bytes_per_line * (
-                3 * self._char_width) - self._char_width
+                    3 * self._char_width) - self._char_width
             self._ascii_start = self._hex_start + self._hex_width + self._col_div
             self._ascii_width = self.bytes_per_line * self._char_width
             self.viewport().update()
@@ -414,10 +412,10 @@ class HexEditor(QAbstractScrollArea):
         """ returns number of chars in row
             not used atm - no hor scroll
         """
-        ret = (self.bytes_per_line * 3) + self.bytes_per_line + \
-            ((self._offset_width - self._offset_start) / self._char_width) * 4
+        ret = (self.bytes_per_line * 3) + self.bytes_per_line + (
+                (self._offset_width - self._offset_start) / self._char_width) * 4
         # ret = self._bytes_per_line * 4
-        return int(ret)
+        return ret
 
     @staticmethod
     def to_ascii(bytes_):
@@ -458,8 +456,7 @@ class HexEditor(QAbstractScrollArea):
         """ helper
         """
         coord_x, coord_y = self.index_to_coords(index)
-        loc_x, loc_y = self.data_to_pixel(
-            coord_x, coord_y)  # pylint: disable=unused-variable
+        loc_x, loc_y = self.data_to_pixel(coord_x, coord_y)  # pylint: disable=unused-variable
         loc_y -= self._header_height + self._char_height + self._ver_spacing
         loc_y = loc_y / (self._char_height + self._ver_spacing)
         return int(loc_y)
@@ -467,8 +464,7 @@ class HexEditor(QAbstractScrollArea):
     def pixel_to_line(self, screen_x, screen_y):
         """ helper
         """
-        coord_x, coord_y = self.pixel_to_data(
-            screen_x, screen_y)  # pylint: disable=unused-variable
+        coord_x, coord_y = self.pixel_to_data(screen_x, screen_y)  # pylint: disable=unused-variable
         return coord_y
 
     def pixel_to_caret(self, pos_x, pos_y):
@@ -549,8 +545,7 @@ class HexEditor(QAbstractScrollArea):
         screen_x = int(
             floor((coord_x * (self._char_width * 3)) + self._hex_start))
         screen_y = self._header_height + self._char_height + self._ver_spacing
-        screen_y += int(floor(coord_y *
-                              (self._char_height + self._ver_spacing)))
+        screen_y += coord_y * (self._char_height + self._ver_spacing)
         return (screen_x, screen_y)
 
     def index_to_asciicol(self, index):
@@ -559,8 +554,7 @@ class HexEditor(QAbstractScrollArea):
         coord_x, coord_y = self.index_to_coords(index - self.pos)
         screen_x = int(floor(coord_x * self._char_width) + self._ascii_start)
         screen_y = self._header_height + self._char_height + self._ver_spacing
-        screen_y += int(floor(coord_y *
-                              (self._char_height + self._ver_spacing)))
+        screen_y += coord_y * (self._char_height + self._ver_spacing)
         return (screen_x, screen_y)
 
     def caret_to_hexcol(self, caret):
@@ -569,7 +563,7 @@ class HexEditor(QAbstractScrollArea):
         hex_cx, hex_cy = self.index_to_hexcol(caret.position)
         hex_cx += (caret.nibble * self._char_width) + 1
         hex_cy -= self._base_line
-        hex_rect = QRect(int(hex_cx - 1), int(hex_cy), 1, int(self._char_height))
+        hex_rect = QRect(int(hex_cx - 1), hex_cy, 1, self._char_height)
         return hex_rect
 
     def caret_to_asciicol(self, caret):
@@ -577,7 +571,7 @@ class HexEditor(QAbstractScrollArea):
         """
         ascii_cx, ascii_cy = self.index_to_asciicol(caret.position)
         ascii_cy -= self._base_line
-        ascii_rect = QRect(int(ascii_cx - 1), int(ascii_cy), 1, int(self._char_height))
+        ascii_rect = QRect(ascii_cx - 1, ascii_cy, 1, self._char_height)
         return ascii_rect
 
     def data_at_caret(self, caret):
@@ -611,19 +605,19 @@ class HexEditor(QAbstractScrollArea):
             self._offset_width = max(
                 len('OFFSET (X)') * self._char_width, 8 * self._char_width)
 
-        self._hex_start = int(self._offset_start + self._offset_width + self._col_div)
-        self._ascii_start = int(self._hex_start + self._hex_width + self._col_div)
+        self._hex_start = self._offset_start + self._offset_width + self._col_div
+        self._ascii_start = self._hex_start + self._hex_width + self._col_div
 
     def adjust(self):
         """ scroll adjusting
         """
         self.horizontalScrollBar().setRange(
             0,
-            int(self.number_of_chars() - self.visible_columns()) + 1)
+            int(self.number_of_chars() - self.visible_columns() + 1))
         self.horizontalScrollBar().setPageStep(self.visible_columns())
         self.verticalScrollBar().setRange(
             0,
-            int(self.number_of_lines() - self.visible_lines()) + 2)
+            int(self.number_of_lines() - self.visible_lines() + 2))
         self.verticalScrollBar().setPageStep(self.visible_lines())
 
     def read_pointer(self):
@@ -657,7 +651,7 @@ class HexEditor(QAbstractScrollArea):
                 self.caret.nibble = 0
             else:
                 _byte = (current_byte & 0x0f) | (
-                    self._hex_chars.index(text) << 4)
+                        self._hex_chars.index(text) << 4)
                 self.caret.nibble = 1
         # caret is asciitype try byteconv
         elif self.caret.mode == 'ascii':
@@ -899,8 +893,7 @@ class HexEditor(QAbstractScrollArea):
         """ onresize
         """
         width = self.width()
-        columns = max(8, int((((width - (2 * self._hor_spacing)) /
-                               self._char_width) - self._max_bple) / 32) * 8)
+        columns = max(8, int((((width - (2 * self._hor_spacing)) / self._char_width) - self._max_bple) / 32) * 8)
         if columns < 8:
             columns = 8
 
@@ -1151,12 +1144,10 @@ class HexEditor(QAbstractScrollArea):
                 context_menu.addSeparator()
 
                 context_menu.addAction("&Disassemble", self.on_cm_show_asm)
-                context_menu.addAction(
-                    "&Dump to file", self.on_cm_dump_to_file)
+                context_menu.addAction("&Dump to file", self.on_cm_dump_to_file)
                 context_menu.addSeparator()
 
-                context_menu.addAction(
-                    "Follow &pointer", self.on_cm_follow_pointer)
+                context_menu.addAction("Follow &pointer", self.on_cm_follow_pointer)
                 context_menu.addSeparator()
 
                 if self.app.watchpoints_panel:
@@ -1171,8 +1162,7 @@ class HexEditor(QAbstractScrollArea):
                         context_menu.addAction(
                             'Remove breakpoint', lambda: self.app.dwarf.dwarf_api('deleteBreakpoint', addr_str))
                     else:
-                        context_menu.addAction(
-                            'Breakpoint address', lambda: self.app.dwarf.breakpoint_native(addr_str))
+                        context_menu.addAction('Breakpoint address', lambda: self.app.dwarf.breakpoint_native(addr_str))
 
                 context_menu.addSeparator()
 
@@ -1194,11 +1184,9 @@ class HexEditor(QAbstractScrollArea):
             context_menu.addSeparator()
 
         if show:
-            context_menu.addAction(
-                '&Copy address', lambda: utils.copy_hex_to_clipboard(hex(self.base + index)))
+            context_menu.addAction('&Copy address', lambda: utils.copy_hex_to_clipboard(hex(self.base + index)))
 
-        context_menu.addAction(
-            "&Jump to address", self.debug_panel.on_cm_jump_to_address)
+        context_menu.addAction("&Jump to address", self.debug_panel.on_cm_jump_to_address)
 
         if not context_menu.isEmpty():
             context_menu.exec_(QCursor.pos())
@@ -1236,8 +1224,7 @@ class HexEditor(QAbstractScrollArea):
     def on_cm_dump_to_file(self):
         """ ContextMenu DumpToFile
         """
-        accept, _input = InputDialog.input(
-            hint='length of bytes to dump', placeholder='1024')
+        accept, _input = InputDialog.input(hint='length of bytes to dump', placeholder='1024')
 
         if not accept:
             return
@@ -1378,8 +1365,8 @@ class HexEditor(QAbstractScrollArea):
 
             # draw selection in hexcolumn
             painter.drawRect(
-                start_x_hex
-                - (self._char_width / 2),  # offset by half charwidth
+                int(start_x_hex
+                - (self._char_width / 2)),  # offset by half charwidth
                 start_y_hex - self._base_line - 1,  # baseline offset
                 end_x_hex - start_x_hex,
                 self._char_height + 1)
@@ -1410,16 +1397,16 @@ class HexEditor(QAbstractScrollArea):
 
             # draw selection in hexcolumn
             painter.drawRect(
-                start_x_hex
-                - (self._char_width / 2),  # offset by half charwidth
+                int(start_x_hex
+                - (self._char_width / 2)),  # offset by half charwidth
                 start_y_hex - self._base_line - 1,  # baseline offset
-                ((self._hex_start + self._hex_width) - start_x_hex)
-                + self._char_width,
+                int(((self._hex_start + self._hex_width) - start_x_hex)
+                + self._char_width),
                 self._char_height + 2)
             if self.selection.end % self.bytes_per_line != 0:
                 painter.drawRect(
-                    self._hex_start
-                    - (self._char_width / 2),  # offset by half charwidth
+                    int(self._hex_start
+                    - (self._char_width / 2)),  # offset by half charwidth
                     end_y_hex - self._base_line - 1,  # baseline offset
                     end_x_hex - self._hex_start,
                     self._char_height + 2)
@@ -1435,7 +1422,7 @@ class HexEditor(QAbstractScrollArea):
             painter.drawRect(
                 start_x_ascii,  # offset by half charwidth
                 start_y_ascii - self._base_line - 1,  # baseline offset
-                ((self._ascii_start + self._ascii_width) - start_x_ascii),
+                int((self._ascii_start + self._ascii_width) - start_x_ascii),
                 self._char_height + 2)
             if self.selection.end % self.bytes_per_line != 0:
                 painter.drawRect(
@@ -1449,40 +1436,40 @@ class HexEditor(QAbstractScrollArea):
             painter.setBrush(brush_color)
             polygon = QPolygon()
             polygon.append(
-                QPoint(start_x_hex - (self._char_width / 2),
+                QPoint(int(start_x_hex - (self._char_width / 2)),
                        start_y_hex + self._char_height - self._base_line + 1))
             polygon.append(
-                QPoint(start_x_hex - (self._char_width / 2),
+                QPoint(int(start_x_hex - (self._char_width / 2)),
                        start_y_hex - self._base_line - 1))
             polygon.append(
                 QPoint(
-                    self._hex_start + self._hex_width + (self._char_width / 2),
+                    int(self._hex_start + self._hex_width + (self._char_width / 2)),
                     start_y_hex - self._base_line - 1))
             polygon.append(
                 QPoint(
-                    self._hex_start + self._hex_width + (self._char_width / 2),
+                    int(self._hex_start + self._hex_width + (self._char_width / 2)),
                     end_y_hex - self._base_line - 1))
             if self.selection.end % self.bytes_per_line != 0:
                 polygon.append(
-                    QPoint(end_x_hex - (self._char_width / 2),
+                    QPoint(int(end_x_hex - (self._char_width / 2)),
                            end_y_hex - self._base_line - 1))
                 polygon.append(
                     QPoint(
-                        end_x_hex - (self._char_width / 2),
+                        int(end_x_hex - (self._char_width / 2)),
                         end_y_hex + self._char_height - self._base_line + 1))
                 polygon.append(
                     QPoint(
-                        self._hex_start - (self._char_width / 2),
+                        int(self._hex_start - (self._char_width / 2)),
                         end_y_hex + self._char_height - self._base_line + 1))
             else:
                 polygon.append(
-                    QPoint(end_x_hex - (self._char_width / 2),
+                    QPoint(int(end_x_hex - (self._char_width / 2)),
                            end_y_hex - self._base_line - 1))
             polygon.append(
-                QPoint(self._hex_start - (self._char_width / 2),
+                QPoint(int(self._hex_start - (self._char_width / 2)),
                        start_y_hex + self._char_height - self._base_line + 1))
             polygon.append(
-                QPoint(start_x_hex - (self._char_width / 2),
+                QPoint(int(start_x_hex - (self._char_width / 2)),
                        start_y_hex + self._char_height - self._base_line + 1))
 
             if self.caret.mode == 'hex':
@@ -1501,10 +1488,10 @@ class HexEditor(QAbstractScrollArea):
                 QPoint(start_x_ascii, start_y_ascii - self._base_line - 1))
             # right top -> right bottom
             polygon.append(
-                QPoint(self._ascii_start + self._ascii_width,
+                QPoint(int(self._ascii_start + self._ascii_width),
                        start_y_ascii - self._base_line - 1))
             polygon.append(
-                QPoint(self._ascii_start + self._ascii_width,
+                QPoint(int(self._ascii_start + self._ascii_width),
                        end_y_ascii - self._base_line - 1))
 
             if self.selection.end % self.bytes_per_line != 0:  # caret already next linestart
@@ -1516,7 +1503,7 @@ class HexEditor(QAbstractScrollArea):
                         end_y_ascii + self._char_height - self._base_line + 1))
                 polygon.append(
                     QPoint(
-                        self._ascii_start,
+                        int(self._ascii_start),
                         end_y_ascii + self._char_height - self._base_line + 1))
             else:
                 polygon.append(
@@ -1525,7 +1512,7 @@ class HexEditor(QAbstractScrollArea):
             # bottom left -> linetop
             polygon.append(
                 QPoint(
-                    self._ascii_start,
+                    int(self._ascii_start),
                     start_y_ascii + self._char_height - self._base_line + 1))
             # back to begin
             polygon.append(
@@ -1545,8 +1532,8 @@ class HexEditor(QAbstractScrollArea):
         back_col = QColor('#222')
         painter.setPen(Qt.red)
         back_rect = self.viewport().rect()
-        back_rect.setWidth(back_rect.width() / 4)
-        back_rect.setHeight(back_rect.height() / 4)
+        back_rect.setWidth(int(back_rect.width() / 4))
+        back_rect.setHeight(int(back_rect.height() / 4))
         screen_x = self.viewport().width() / 2
         screen_x -= back_rect.width() / 2
         screen_y = self.viewport().height() / 2
@@ -1554,10 +1541,10 @@ class HexEditor(QAbstractScrollArea):
         painter.fillRect(0, 0,
                          self.viewport().width(),
                          self.viewport().height(), QColor('#99000000'))
-        painter.fillRect(screen_x - 1, screen_y - 1,
+        painter.fillRect(int(screen_x - 1), int(screen_y - 1),
                          back_rect.width() + 2,
                          back_rect.height() + 2, brdr_col)
-        painter.fillRect(screen_x, screen_y, back_rect.width(),
+        painter.fillRect(int(screen_x), int(screen_y), back_rect.width(),
                          back_rect.height(), back_col)
         qtext_align = QTextOption(Qt.AlignVCenter | Qt.AlignHCenter)
         text_rect = QRectF(screen_x + 10, screen_y + 10,
@@ -1610,10 +1597,10 @@ class HexEditor(QAbstractScrollArea):
         # draw separator lines
         if self._draw_sep_lines:
             line_pos_x = self._hex_start - self._line_width - self._hor_spacing
-            painter.fillRect(line_pos_x, 0, self._line_width, self.height(),
+            painter.fillRect(int(line_pos_x), 0, self._line_width, self.height(),
                              self._ctrl_colors['divider'])
             line_pos_x = self._ascii_start - self._line_width - self._hor_spacing
-            painter.fillRect(line_pos_x, 0, self._line_width, self.height(),
+            painter.fillRect(int(line_pos_x), 0, self._line_width, self.height(),
                              self._ctrl_colors['divider'])
 
         painter.setPen(self._ctrl_colors['foreground'])
@@ -1759,7 +1746,7 @@ class HexEditor(QAbstractScrollArea):
 
                 # paint hex
                 if self._hex_style == 'upper':
-                    painter.drawText(drawing_pos_x, drawing_pos_y,
+                    painter.drawText(int(drawing_pos_x), drawing_pos_y,
                                      "{:02X} ".format(byte))
                 else:
                     painter.drawText(drawing_pos_x, drawing_pos_y,
@@ -1774,7 +1761,7 @@ class HexEditor(QAbstractScrollArea):
 
             # draw whole ascii if no highlight
             if not has_highlight and not is_in_selection:
-                painter.drawText(self._ascii_start, drawing_pos_y, ascii_)
+                painter.drawText(int(self._ascii_start), drawing_pos_y, ascii_)
             else:
                 for a, c in enumerate(ascii_):
                     highlight = self.is_highlighted(address + a)
@@ -1791,7 +1778,7 @@ class HexEditor(QAbstractScrollArea):
                             painter.setPen(self._ctrl_colors['selection_fg'])
 
                     painter.drawText(
-                        self._ascii_start + (a * self._char_width),
+                        int(self._ascii_start + (a * self._char_width)),
                         drawing_pos_y, c)
 
             # new y
