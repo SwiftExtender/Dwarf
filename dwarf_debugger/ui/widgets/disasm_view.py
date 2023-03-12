@@ -302,7 +302,7 @@ class DisassemblyView(QAbstractScrollArea):
                 skip = False
 
                 if line.address not in jump_targets:
-                    painter.drawLine(drawing_pos_x + 2, drawing_pos_y, self._jumps_width, drawing_pos_y)
+                    painter.drawLine(int(drawing_pos_x + 2), drawing_pos_y, self._jumps_width, drawing_pos_y)
                     if line.is_jump:
                         _address = line.jump_address
                     elif line.is_call:
@@ -423,7 +423,7 @@ class DisassemblyView(QAbstractScrollArea):
                 y_pos += (self._char_height * 0.5)
                 if is_watched:
                     height *= 0.5
-                painter.fillRect(self._jumps_width, y_pos - height, self._breakpoint_linewidth, height,
+                painter.fillRect(int(self._jumps_width), y_pos - height, self._breakpoint_linewidth, height,
                                  QColor('crimson'))
 
         drawing_pos_x = self._jumps_width + self._breakpoint_linewidth + int(self._char_width) + 1 + int(
@@ -564,7 +564,7 @@ class DisassemblyView(QAbstractScrollArea):
                 y_pos = self._header_height + (i * (self._char_height + self._ver_spacing))
                 y_pos += (self._char_height * 0.5)
                 y_pos -= self._ver_spacing
-                painter.fillRect(self._jumps_width + self._breakpoint_linewidth, y_pos - 1, self.viewport().width(),
+                painter.fillRect(self._jumps_width + self._breakpoint_linewidth, int(y_pos - 1), self.viewport().width(),
                                  self._char_height + 2, self._ctrl_colors['line'])
 
             if i == self._highlighted_line:
